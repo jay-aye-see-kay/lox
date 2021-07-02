@@ -1,4 +1,4 @@
-package lox;
+package com.craftinginterpreters.lox;
 
 class Token {
     final TokenType type;
