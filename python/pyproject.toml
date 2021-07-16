@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "python"
+name = "lox"
 version = "0.1.0"
 description = ""
 authors = ["Jack Rose <user@jackrose.co.nz>"]

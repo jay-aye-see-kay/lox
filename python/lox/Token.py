@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from .TokenType import TokenType
+from lox.TokenType import TokenType
 
 
 @dataclass
