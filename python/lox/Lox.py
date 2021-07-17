@@ -21,7 +21,7 @@ class Lox:
             self.hadError = False
 
     def run(self, source: str):
-        scanner = Scanner(source) # TODO Scanner can't use Lox.error()
+        scanner = Scanner(source, self)
         tokens = scanner.scan_tokens()
         for token in tokens:
             print(token)

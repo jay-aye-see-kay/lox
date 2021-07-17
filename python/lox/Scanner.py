@@ -1,5 +1,11 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 from lox.TokenType import TokenType
 from lox.Token import Token
+
+if TYPE_CHECKING:
+    from lox.Lox import Lox
 
 tt = TokenType
 
@@ -24,13 +30,15 @@ keywords = {
 
 class Scanner():
     source: str
-    tokens: list[Token] = []
+    tokens: list[Token]
     start = 0
     current = 0
     line = 0
 
-    def __init__(self, source: str):
+    def __init__(self, source: str, lox: Lox):
         self.source = source
+        self.lox = lox
+        self.tokens = []
 
     def scan_tokens(self):
         while not self.is_at_end():
@@ -87,8 +95,7 @@ class Scanner():
             elif self.is_alpha(char):
                 self.identifier();
             else:
-                # Lox().error(self.line, "Unexpected character.")
-                print(self.line, "Unexpected character.")
+                self.lox.error(self.line, "Unexpected character.")
 
     def identifier(self):
         while self.is_alphanumeric(self.peek()):
@@ -113,8 +120,7 @@ class Scanner():
                 self.line += 1
             self.advance()
         if self.is_at_end():
-            # Lox().error(self.line, "Unterminated string.")
-            print(self.line, "Unterminated string.")
+            self.lox.error(self.line, "Unterminated string.")
             return
         # the closing "
         self.advance()
