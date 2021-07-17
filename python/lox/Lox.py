@@ -1,5 +1,6 @@
 from lox.Scanner import Scanner
 
+
 class Lox:
     hadError = False
 

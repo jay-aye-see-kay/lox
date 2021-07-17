@@ -10,25 +10,26 @@ if TYPE_CHECKING:
 tt = TokenType
 
 keywords = {
-    "and":    tt.AND,
-    "class":  tt.CLASS,
-    "else":   tt.ELSE,
-    "false":  tt.FALSE,
-    "for":    tt.FOR,
-    "fun":    tt.FUN,
-    "if":     tt.IF,
-    "nil":    tt.NIL,
-    "or":     tt.OR,
-    "print":  tt.PRINT,
+    "and": tt.AND,
+    "class": tt.CLASS,
+    "else": tt.ELSE,
+    "false": tt.FALSE,
+    "for": tt.FOR,
+    "fun": tt.FUN,
+    "if": tt.IF,
+    "nil": tt.NIL,
+    "or": tt.OR,
+    "print": tt.PRINT,
     "return": tt.RETURN,
-    "super":  tt.SUPER,
-    "this":   tt.THIS,
-    "true":   tt.TRUE,
-    "var":    tt.VAR,
-    "while":  tt.WHILE,
+    "super": tt.SUPER,
+    "this": tt.THIS,
+    "true": tt.TRUE,
+    "var": tt.VAR,
+    "while": tt.WHILE,
 }
 
-class Scanner():
+
+class Scanner:
     source: str
     tokens: list[Token]
     start = 0
@@ -70,13 +71,13 @@ class Scanner():
         elif char == "*":
             self.add_token(tt.STAR)
         elif char == "!":
-            self.add_token(tt.BANG_EQUAL if self.match('=') else tt.BANG)
+            self.add_token(tt.BANG_EQUAL if self.match("=") else tt.BANG)
         elif char == "=":
-            self.add_token(tt.EQUAL_EQUAL if self.match('=') else tt.EQUAL)
+            self.add_token(tt.EQUAL_EQUAL if self.match("=") else tt.EQUAL)
         elif char == "<":
-            self.add_token(tt.LESS_EQUAL if self.match('=') else tt.LESS)
+            self.add_token(tt.LESS_EQUAL if self.match("=") else tt.LESS)
         elif char == ">":
-            self.add_token(tt.GREATER_EQUAL if self.match('=') else tt.GREATER)
+            self.add_token(tt.GREATER_EQUAL if self.match("=") else tt.GREATER)
         elif char == "/":
             if self.match("/"):
                 while self.peek() != "\n" and not self.is_at_end():
@@ -93,14 +94,14 @@ class Scanner():
             if self.is_digit(char):
                 self.number()
             elif self.is_alpha(char):
-                self.identifier();
+                self.identifier()
             else:
                 self.lox.error(self.line, "Unexpected character.")
 
     def identifier(self):
         while self.is_alphanumeric(self.peek()):
             self.advance()
-        text = self.source[self.start:self.current]
+        text = self.source[self.start : self.current]
         type = keywords.get(text, tt.IDENTIFIER)
         self.add_token(type)
 
@@ -108,11 +109,11 @@ class Scanner():
         while self.is_digit(self.peek()):
             self.advance()
         # look for a fractional part
-        if self.peek() == '.' and self.is_digit(self.peek_next()):
+        if self.peek() == "." and self.is_digit(self.peek_next()):
             self.advance()
             while self.is_digit(self.peek()):
                 self.advance()
-        self.add_token(tt.NUMBER, float(self.source[self.start:self.current]))
+        self.add_token(tt.NUMBER, float(self.source[self.start : self.current]))
 
     def string(self):
         while self.peek() != '"' and not self.is_at_end():
@@ -124,7 +125,7 @@ class Scanner():
             return
         # the closing "
         self.advance()
-        value = self.source[self.start+1:self.current-1]
+        value = self.source[self.start + 1 : self.current - 1]
         self.add_token(tt.STRING, value)
 
     def match(self, expected: str):
@@ -146,7 +147,11 @@ class Scanner():
         return self.source[self.current + 1]
 
     def is_alpha(self, char: str):
-        return (char >= "a" and char <= "z") or (char >= "A" and char <= "Z") or char == "_"
+        return (
+            (char >= "a" and char <= "z")
+            or (char >= "A" and char <= "Z")
+            or char == "_"
+        )
 
     def is_alphanumeric(self, char: str):
         return self.is_alpha(char) or self.is_digit(char)
@@ -165,5 +170,5 @@ class Scanner():
 
     def add_token(self, type: TokenType, literal: object = None):
         """Grabs the text of the current lexeme and creates a new token for it"""
-        text = self.source[self.start:self.current]
+        text = self.source[self.start : self.current]
         self.tokens.append(Token(type, text, literal, self.line))

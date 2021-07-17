@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class TokenType(Enum):
     # Single-character tokens
     LEFT_PAREN = 1
