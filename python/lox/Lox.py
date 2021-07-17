@@ -1,3 +1,5 @@
+from lox.AstPrinter import AstPrinter
+from lox.Parser import Parser
 from lox.Scanner import Scanner
 
 
@@ -24,8 +26,13 @@ class Lox:
     def run(self, source: str):
         scanner = Scanner(source, self)
         tokens = scanner.scan_tokens()
-        for token in tokens:
-            print(token)
+        parser = Parser(tokens)
+        expression = parser.parse()
+
+        if self.hadError or expression == None:
+            return
+
+        print(AstPrinter().print(expression))
 
     def error(self, line: int, message: str):
         self.report(line, "", message)
