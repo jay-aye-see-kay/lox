@@ -1,8 +1,9 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, cast
+from typing import List, TYPE_CHECKING, cast
 
+from lox.Stmt import Expression, Stmt, StmtVisitor
 from lox.Exceptions import LoxRuntimeError
-from lox.Expr import Binary, Expr, Grouping, Literal, Unary, Visitor
+from lox.Expr import Binary, Expr, Grouping, Literal, Unary, ExprVisitor
 from lox.Token import Token
 from lox.TokenType import TokenType
 
@@ -12,20 +13,30 @@ if TYPE_CHECKING:
 tt = TokenType
 
 
-class Interpreter(Visitor):
+class Interpreter(ExprVisitor, StmtVisitor):
     def __init__(self, lox: Lox):
         super(Interpreter, self).__init__()
         self.lox = lox
 
-    def interpret(self, expression):
+    def interpret(self, statements: List[Stmt]):
         try:
-            value = self.evaluate(expression)
-            print(self.stringify(value))
+            for statement in statements:
+                self.execute(statement)
         except LoxRuntimeError as error:
             self.lox.runtime_error(error)
 
     def evaluate(self, expr: Expr):
         return expr.accept(self)
+
+    def execute(self, stmt: Stmt):
+        stmt.accept(self)
+
+    def visit_expression_stmt(self, stmt: Expression):
+        self.evaluate(stmt.expression)
+
+    def visit_print_stmt(self, stmt: Expression):
+        value = self.evaluate(stmt.expression)
+        print(self.stringify(value))
 
     def is_truthy(self, obj: object):
         """like ruby; only False and None are falsy"""

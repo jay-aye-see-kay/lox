@@ -31,12 +31,12 @@ class Lox:
         scanner = Scanner(source, self)
         tokens = scanner.scan_tokens()
         parser = Parser(tokens)
-        expression = parser.parse()
+        statements = parser.parse()
 
-        if self.had_error or expression == None:
+        if self.had_error or len(statements) == 0:
             return
 
-        Interpreter(self).interpret(expression)
+        Interpreter(self).interpret(statements)
 
     def error(self, line: int, message: str):
         self.report(line, "", message)

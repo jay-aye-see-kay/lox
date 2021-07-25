@@ -1,3 +1,5 @@
+from typing import List
+from lox.Stmt import Expression, Print, Stmt
 from lox.Expr import Binary, Unary, Literal, Grouping
 from lox.TokenType import TokenType
 from lox.Token import Token
@@ -12,13 +14,28 @@ class Parser:
         self.tokens = tokens
 
     def parse(self):
-        try:
-            return self.expression()
-        except Exception:
-            return None
+        statements: List[Stmt] = []
+        while not self.is_at_end():
+            statements.append(self.statement())
+        return statements
 
     def expression(self):
         return self.equality()
+
+    def statement(self) -> Stmt:
+        if self.match(tt.PRINT):
+            return self.print_statement()
+        return self.expression_statement()
+
+    def print_statement(self):
+        value = self.expression()
+        self.consume(tt.SEMICOLON, "Expect ';' after value.")
+        return Print(value)
+
+    def expression_statement(self):
+        expr = self.expression()
+        self.consume(tt.SEMICOLON, "Expect ';' after expression.")
+        return Expression(expr)
 
     def equality(self):
         expr = self.comparison()

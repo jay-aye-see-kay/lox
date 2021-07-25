@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from lox.Token import Token
 
 
-class Visitor(ABC):
+class ExprVisitor(ABC):
     @abstractmethod
     def visit_binary_expr(self, expr: "Binary"):
         pass
@@ -23,7 +23,7 @@ class Visitor(ABC):
 
 class Expr(ABC):
     @abstractmethod
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor: ExprVisitor):
         pass
 
 
@@ -33,7 +33,7 @@ class Binary(Expr):
     operator: Token
     right: Expr
 
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor: ExprVisitor):
         return visitor.visit_binary_expr(self)
 
 
@@ -41,7 +41,7 @@ class Binary(Expr):
 class Grouping(Expr):
     expression: Expr
 
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor: ExprVisitor):
         return visitor.visit_grouping_expr(self)
 
 
@@ -49,7 +49,7 @@ class Grouping(Expr):
 class Literal(Expr):
     value: object
 
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor: ExprVisitor):
         return visitor.visit_literal_expr(self)
 
 
@@ -58,5 +58,5 @@ class Unary(Expr):
     operator: Token
     right: Expr
 
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor: ExprVisitor):
         return visitor.visit_unary_expr(self)

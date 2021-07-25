@@ -1,7 +1,7 @@
-from lox.Expr import Binary, Expr, Grouping, Literal, Unary, Visitor
+from lox.Expr import Binary, Expr, Grouping, Literal, Unary, ExprVisitor
 
 
-class AstPrinter(Visitor):
+class AstPrinter(ExprVisitor):
     def print(self, expr: Expr):
         return expr.accept(self)
 
