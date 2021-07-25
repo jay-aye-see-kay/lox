@@ -1,4 +1,4 @@
-from lox.AstPrinter import AstPrinter
+from lox.Interpreter import Interpreter
 from lox.Parser import Parser
 from lox.Scanner import Scanner
 
@@ -32,7 +32,7 @@ class Lox:
         if self.hadError or expression == None:
             return
 
-        print(AstPrinter().print(expression))
+        Interpreter().interpret(expression)
 
     def error(self, line: int, message: str):
         self.report(line, "", message)
