@@ -9,6 +9,6 @@ if __name__ == "__main__":
         print("Usage: lox [script]")
         exit(64)
     elif len(args) == 1:
-        Lox().runFile(args[0])
+        Lox().run_file(args[0])
     else:
-        Lox().runPrompt()
+        Lox().run_prompt()

@@ -1,17 +1,28 @@
-from typing import cast
+from __future__ import annotations
+from typing import TYPE_CHECKING, cast
+
+from lox.Exceptions import LoxRuntimeError
 from lox.Expr import Binary, Expr, Grouping, Literal, Unary, Visitor
+from lox.Token import Token
 from lox.TokenType import TokenType
+
+if TYPE_CHECKING:
+    from lox.Lox import Lox
 
 tt = TokenType
 
 
 class Interpreter(Visitor):
+    def __init__(self, lox: Lox):
+        super(Interpreter, self).__init__()
+        self.lox = lox
+
     def interpret(self, expression):
         try:
             value = self.evaluate(expression)
             print(self.stringify(value))
-        except expression as error:
-            print("error", error)  # TODO
+        except LoxRuntimeError as error:
+            self.lox.runtime_error(error)
 
     def evaluate(self, expr: Expr):
         return expr.accept(self)
@@ -42,12 +53,16 @@ class Interpreter(Visitor):
         right = cast(str, right)
 
         if expr.operator.type == tt.GREATER:
+            self.check_number_operands(expr.operator, left, right)
             return float(left) > float(right)
         elif expr.operator.type == tt.GREATER_EQUAL:
+            self.check_number_operands(expr.operator, left, right)
             return float(left) >= float(right)
         elif expr.operator.type == tt.LESS:
+            self.check_number_operands(expr.operator, left, right)
             return float(left) < float(right)
         elif expr.operator.type == tt.LESS_EQUAL:
+            self.check_number_operands(expr.operator, left, right)
             return float(left) <= float(right)
 
         elif expr.operator.type == tt.BANG_EQUAL:
@@ -56,16 +71,20 @@ class Interpreter(Visitor):
             return left == right
 
         elif expr.operator.type == tt.MINUS:
+            self.check_number_operands(expr.operator, left, right)
             return float(left) - float(right)
         elif expr.operator.type == tt.PLUS:
             if isinstance(left, float) and isinstance(right, float):
                 return left + right
             elif isinstance(left, str) and isinstance(right, str):
                 return left + right
+            raise LoxRuntimeError(expr.operator, "operands must be numbers or strings")
 
         elif expr.operator.type == tt.SLASH:
+            self.check_number_operands(expr.operator, left, right)
             return float(left) / float(right)
         elif expr.operator.type == tt.STAR:
+            self.check_number_operands(expr.operator, left, right)
             return float(left) * float(right)
 
         raise Exception("unreachable")
@@ -81,8 +100,14 @@ class Interpreter(Visitor):
         right = cast(str, right)
 
         if expr.operator.type == tt.MINUS:
+            self.check_number_operands(expr.operator, right)
             return -float(right)
         elif expr.operator.type == tt.BANG:
             return not self.is_truthy(right)
 
         raise Exception("unreachable")
+
+    def check_number_operands(self, operator: Token, *exprs: object):
+        for expr in exprs:
+            if not isinstance(expr, float):
+                raise LoxRuntimeError(operator, "operands must be numbers")
