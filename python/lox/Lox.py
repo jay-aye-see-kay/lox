@@ -1,3 +1,6 @@
+from typing import Union
+from lox.Token import Token
+from lox.TokenType import TokenType
 from lox.Exceptions import LoxRuntimeError
 from lox.Interpreter import Interpreter
 from lox.Parser import Parser
@@ -30,7 +33,7 @@ class Lox:
     def run(self, source: str):
         scanner = Scanner(source, self)
         tokens = scanner.scan_tokens()
-        parser = Parser(tokens)
+        parser = Parser(tokens, self)
         statements = parser.parse()
 
         if self.had_error or len(statements) == 0:
@@ -38,8 +41,15 @@ class Lox:
 
         Interpreter(self).interpret(statements)
 
-    def error(self, line: int, message: str):
-        self.report(line, "", message)
+    def error(self, token: Union[int, Token], message: str):
+        if isinstance(token, int):
+            # the book overloads this method to take a token or line_no
+            line = token
+            self.report(line, "", message)
+        elif token.type == TokenType.EOF:
+            self.report(token.line, " at end", message)
+        else:
+            self.report(token.line, f" at '{token.lexeme}'", message)
 
     def report(self, line: int, where: str, message: str):
         print(f"[line {line}] Error{where}: {message}")

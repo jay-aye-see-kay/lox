@@ -1,6 +1,8 @@
-from typing import List
-from lox.Stmt import Expression, Print, Stmt
-from lox.Expr import Binary, Unary, Literal, Grouping
+from lox.Lox import Lox
+from lox.Exceptions import ParseError
+from typing import List, Union
+from lox.Stmt import Expression, Print, Stmt, Var
+from lox.Expr import Binary, Unary, Literal, Grouping, Variable
 from lox.TokenType import TokenType
 from lox.Token import Token
 
@@ -10,17 +12,27 @@ tt = TokenType
 class Parser:
     current = 0
 
-    def __init__(self, tokens: list[Token]):
+    def __init__(self, tokens: list[Token], lox: Lox):
         self.tokens = tokens
+        self.lox = lox
 
     def parse(self):
-        statements: List[Stmt] = []
+        statements: List[Union[Stmt, None]] = [] # TODO should this be a union?
         while not self.is_at_end():
-            statements.append(self.statement())
+            statements.append(self.declaration())
         return statements
 
     def expression(self):
         return self.equality()
+
+    def declaration(self):
+        try:
+            if self.match(tt.VAR):
+                return self.var_declaration()
+            return self.statement()
+        except ParseError as _:
+            self.synchronize()
+            return None
 
     def statement(self) -> Stmt:
         if self.match(tt.PRINT):
@@ -31,6 +43,16 @@ class Parser:
         value = self.expression()
         self.consume(tt.SEMICOLON, "Expect ';' after value.")
         return Print(value)
+
+    def var_declaration(self):
+        name = self.consume(tt.IDENTIFIER, "Expect variable name.")
+        initializer = None
+        if self.match(tt.EQUAL):
+            initializer = self.expression()
+        self.consume(tt.SEMICOLON, "Expect ';' after variable declaration.")
+        if initializer is None:
+            raise # TODO
+        return Var(name, initializer)
 
     def expression_statement(self):
         expr = self.expression()
@@ -85,6 +107,8 @@ class Parser:
             return Literal(None)
         if self.match(tt.NUMBER, tt.STRING):
             return Literal(self.previous().literal)
+        if self.match(tt.IDENTIFIER):
+            return Variable(self.previous())
         if self.match(tt.LEFT_PAREN):
             expr = self.expression()
             self.consume(tt.RIGHT_PAREN, "Expect ')' after expression.")
@@ -102,8 +126,7 @@ class Parser:
     def consume(self, type: TokenType, message: str):
         if self.check(type):
             return self.advance()
-        # TODO proper exception
-        raise Exception(self.peek(), message)
+        raise self.error(self.peek(), message)
 
     def check(self, type: TokenType):
         if self.is_at_end():
@@ -123,3 +146,23 @@ class Parser:
 
     def previous(self):
         return self.tokens[self.current - 1]
+
+    def error(self, token: Token, message: str) -> ParseError:
+        self.lox.error(token, message)
+        return ParseError()
+
+    def synchronize(self):
+        self.advance()
+
+        while not self.is_at_end():
+            # after a semicolon, we’re probably finished with a statement
+            if self.previous().type == tt.SEMICOLON:
+                return
+            # Most statements start with a keyword—for, if, return, var, etc.
+            # When the next token is any of those, we’re probably about to
+            # start a statement.
+            if self.peek().type in [tt.CLASS, tt.FUN, tt.VAR, tt.FOR, tt.IF, tt.WHILE, tt.PRINT, tt.RETURN]: 
+                return
+            self.advance()
+
+

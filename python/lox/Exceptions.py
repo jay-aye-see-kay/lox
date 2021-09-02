@@ -6,3 +6,6 @@ from lox.Token import Token
 class LoxRuntimeError(RuntimeError):
     token: Token
     message: str
+
+class ParseError(RuntimeError):
+    pass

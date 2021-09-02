@@ -20,6 +20,10 @@ class ExprVisitor(ABC):
     def visit_unary_expr(self, expr: "Unary"):
         pass
 
+    @abstractmethod
+    def visit_variable_expr(self, expr: "Variable"):
+        pass
+
 
 class Expr(ABC):
     @abstractmethod
@@ -60,3 +64,11 @@ class Unary(Expr):
 
     def accept(self, visitor: ExprVisitor):
         return visitor.visit_unary_expr(self)
+
+
+@dataclass
+class Variable(Expr):
+    name: Token
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_variable_expr(self)
