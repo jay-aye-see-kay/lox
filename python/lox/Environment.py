@@ -13,7 +13,7 @@ class Environment():
 
     def get(self, name: Token):
         value = self.values[name.lexeme]
-        if value:
+        if value is not None:
             return value
         raise LoxRuntimeError(name, f"Undefined variable '{name.lexeme}'.")
 
