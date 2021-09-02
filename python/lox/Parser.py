@@ -1,10 +1,13 @@
-from lox.Lox import Lox
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from lox.Lox import Lox
 from lox.Exceptions import ParseError
-from typing import List, Union
+from typing import List
 from lox.Stmt import Expression, Print, Stmt, Var
-from lox.Expr import Binary, Unary, Literal, Grouping, Variable
+from lox.Expr import Assign, Binary, Unary, Literal, Grouping, Variable
 from lox.TokenType import TokenType
 from lox.Token import Token
+
 
 tt = TokenType
 
@@ -12,7 +15,7 @@ tt = TokenType
 class Parser:
     current = 0
 
-    def __init__(self, tokens: list[Token], lox: Lox):
+    def __init__(self, tokens: list[Token], lox: "Lox"):
         self.tokens = tokens
         self.lox = lox
 
@@ -25,7 +28,7 @@ class Parser:
         return statements
 
     def expression(self):
-        return self.equality()
+        return self.assignment()
 
     def declaration(self):
         try:
@@ -60,6 +63,16 @@ class Parser:
         expr = self.expression()
         self.consume(tt.SEMICOLON, "Expect ';' after expression.")
         return Expression(expr)
+
+    def assignment(self):
+        expr = self.equality()
+        if self.match(tt.EQUAL):
+            equals = self.previous()
+            value = self.assignment()
+            if isinstance(expr, Variable):
+                return Assign(expr.name, value)
+            self.error(equals, "Invalid assignment target.")
+        return expr
 
     def equality(self):
         expr = self.comparison()

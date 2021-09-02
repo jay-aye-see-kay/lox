@@ -5,6 +5,10 @@ from lox.Token import Token
 
 class ExprVisitor(ABC):
     @abstractmethod
+    def visit_assign_expr(self, expr: "Assign"):
+        pass
+
+    @abstractmethod
     def visit_binary_expr(self, expr: "Binary"):
         pass
 
@@ -29,6 +33,15 @@ class Expr(ABC):
     @abstractmethod
     def accept(self, visitor: ExprVisitor):
         pass
+
+
+@dataclass
+class Assign(Expr):
+    name: Token
+    value: Expr
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_assign_expr(self)
 
 
 @dataclass

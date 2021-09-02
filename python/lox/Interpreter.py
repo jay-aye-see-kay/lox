@@ -4,7 +4,7 @@ from typing import List, TYPE_CHECKING, cast
 
 from lox.Stmt import Expression, Stmt, StmtVisitor, Var
 from lox.Exceptions import LoxRuntimeError
-from lox.Expr import Binary, Expr, Grouping, Literal, Unary, ExprVisitor, Variable
+from lox.Expr import Assign, Binary, Expr, Grouping, Literal, Unary, ExprVisitor, Variable
 from lox.Token import Token
 from lox.TokenType import TokenType
 
@@ -45,6 +45,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
         if stmt.initializer is not None:
             value = self.evaluate(stmt.initializer)
         self.environment.define(stmt.name.lexeme, value)
+
+    def visit_assign_expr(self, expr: Assign):
+        value = self.evaluate(expr.value)
+        self.environment.assign(expr.name, value)
+        return value
 
     def is_truthy(self, obj: object):
         """like ruby; only False and None are falsy"""
