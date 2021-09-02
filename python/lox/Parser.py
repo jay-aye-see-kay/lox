@@ -17,9 +17,11 @@ class Parser:
         self.lox = lox
 
     def parse(self):
-        statements: List[Union[Stmt, None]] = [] # TODO should this be a union?
+        statements: List[Stmt] = []
         while not self.is_at_end():
-            statements.append(self.declaration())
+            declaration = self.declaration()
+            if declaration:
+                statements.append(declaration)
         return statements
 
     def expression(self):

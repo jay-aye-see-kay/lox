@@ -1,9 +1,10 @@
 from __future__ import annotations
+from lox.Environment import Environment
 from typing import List, TYPE_CHECKING, cast
 
-from lox.Stmt import Expression, Stmt, StmtVisitor
+from lox.Stmt import Expression, Stmt, StmtVisitor, Var
 from lox.Exceptions import LoxRuntimeError
-from lox.Expr import Binary, Expr, Grouping, Literal, Unary, ExprVisitor
+from lox.Expr import Binary, Expr, Grouping, Literal, Unary, ExprVisitor, Variable
 from lox.Token import Token
 from lox.TokenType import TokenType
 
@@ -17,6 +18,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def __init__(self, lox: Lox):
         super(Interpreter, self).__init__()
         self.lox = lox
+        self.environment = Environment()
 
     def interpret(self, statements: List[Stmt]):
         try:
@@ -37,6 +39,12 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def visit_print_stmt(self, stmt: Expression):
         value = self.evaluate(stmt.expression)
         print(self.stringify(value))
+
+    def visit_var_stmt(self, stmt: Var):
+        value = None
+        if stmt.initializer is not None:
+            value = self.evaluate(stmt.initializer)
+        self.environment.define(stmt.name.lexeme, value)
 
     def is_truthy(self, obj: object):
         """like ruby; only False and None are falsy"""
@@ -117,6 +125,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
             return not self.is_truthy(right)
 
         raise Exception("unreachable")
+
+    def visit_variable_expr(self, expr: Variable):
+        return self.environment.get(expr.name)
 
     def check_number_operands(self, operator: Token, *exprs: object):
         for expr in exprs:

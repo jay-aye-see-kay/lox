@@ -7,15 +7,15 @@ from lox.Token import Token
 
 class StmtVisitor(ABC):
     @abstractmethod
-    def visit_expression_stmt(self, expr: "Expression"):
+    def visit_expression_stmt(self, stmt: "Expression"):
         pass
 
     @abstractmethod
-    def visit_print_stmt(self, expr: "Print"):
+    def visit_print_stmt(self, stmt: "Print"):
         pass
 
     @abstractmethod
-    def visit_var_stmt(self, expr: "Var"):
+    def visit_var_stmt(self, stmt: "Var"):
         pass
 
 
