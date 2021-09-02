@@ -56,7 +56,9 @@ class Parser:
             initializer = self.expression()
         self.consume(tt.SEMICOLON, "Expect ';' after variable declaration.")
         if initializer is None:
-            raise # TODO
+            # HACK because python is non-nullable:
+            # create a "fake token" of value None to store as variable value
+            initializer = Literal(Token(tt.IDENTIFIER, "", None, name.line))
         return Var(name, initializer)
 
     def expression_statement(self):
