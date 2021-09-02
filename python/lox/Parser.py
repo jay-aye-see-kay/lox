@@ -3,7 +3,7 @@ if TYPE_CHECKING:
     from lox.Lox import Lox
 from lox.Exceptions import ParseError
 from typing import List
-from lox.Stmt import Expression, Print, Stmt, Var
+from lox.Stmt import Block, Expression, Print, Stmt, Var
 from lox.Expr import Assign, Binary, Unary, Literal, Grouping, Variable
 from lox.TokenType import TokenType
 from lox.Token import Token
@@ -22,9 +22,9 @@ class Parser:
     def parse(self):
         statements: List[Stmt] = []
         while not self.is_at_end():
-            declaration = self.declaration()
-            if declaration:
-                statements.append(declaration)
+            statement = self.declaration()
+            if statement:
+                statements.append(statement)
         return statements
 
     def expression(self):
@@ -42,6 +42,8 @@ class Parser:
     def statement(self) -> Stmt:
         if self.match(tt.PRINT):
             return self.print_statement()
+        if self.match(tt.LEFT_BRACE):
+            return Block(self.block())
         return self.expression_statement()
 
     def print_statement(self):
@@ -65,6 +67,15 @@ class Parser:
         expr = self.expression()
         self.consume(tt.SEMICOLON, "Expect ';' after expression.")
         return Expression(expr)
+
+    def block(self):
+        statements: List[Stmt] = []
+        while not self.check(tt.RIGHT_BRACE) and not self.is_at_end():
+            statement = self.declaration()
+            if statement:
+                statements.append(statement)
+        self.consume(tt.RIGHT_BRACE, "Expect '}' after block.")
+        return statements
 
     def assignment(self):
         expr = self.equality()

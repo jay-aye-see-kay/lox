@@ -2,7 +2,7 @@ from __future__ import annotations
 from lox.Environment import Environment
 from typing import List, TYPE_CHECKING, cast
 
-from lox.Stmt import Expression, Stmt, StmtVisitor, Var
+from lox.Stmt import Block, Expression, Stmt, StmtVisitor, Var
 from lox.Exceptions import LoxRuntimeError
 from lox.Expr import Assign, Binary, Expr, Grouping, Literal, Unary, ExprVisitor, Variable
 from lox.Token import Token
@@ -32,6 +32,19 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def execute(self, stmt: Stmt):
         stmt.accept(self)
+
+    def execute_block(self, statements: List[Stmt], new_environment: Environment):
+        previous_environment = self.environment
+        try:
+            self.environment = new_environment
+            for statement in statements:
+                self.execute(statement)
+        finally:
+            self.environment = previous_environment
+
+    def visit_block_stmt(self, stmt: Block):
+        new_environment = Environment(self.environment)
+        self.execute_block(stmt.statements, new_environment)
 
     def visit_expression_stmt(self, stmt: Expression):
         self.evaluate(stmt.expression)

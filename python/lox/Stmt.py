@@ -1,11 +1,16 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import List
 
 from lox.Expr import Expr
 from lox.Token import Token
 
 
 class StmtVisitor(ABC):
+    @abstractmethod
+    def visit_block_stmt(self, stmt: "Block"):
+        pass
+
     @abstractmethod
     def visit_expression_stmt(self, stmt: "Expression"):
         pass
@@ -23,6 +28,14 @@ class Stmt(ABC):
     @abstractmethod
     def accept(self, visitor: StmtVisitor):
         pass
+
+
+@dataclass
+class Block(Stmt):
+    statements: List[Stmt]
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_block_stmt(self)
 
 
 @dataclass
