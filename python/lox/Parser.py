@@ -40,6 +40,8 @@ class Parser:
             return None
 
     def statement(self) -> Stmt:
+        if self.match(tt.FOR):
+            return self.for_statement()
         if self.match(tt.IF):
             return self.if_statement()
         if self.match(tt.PRINT):
@@ -49,6 +51,41 @@ class Parser:
         if self.match(tt.LEFT_BRACE):
             return Block(self.block())
         return self.expression_statement()
+
+    def for_statement(self):
+        self.consume(tt.LEFT_PAREN, "Expect '(' after 'for'.")
+        # look for the initializer
+        if self.match(tt.SEMICOLON):
+            initializer = None
+        elif self.match(tt.VAR):
+            initializer = self.var_declaration()
+        else:
+            initializer = self.expression_statement()
+        # look for the condition
+        condition = None
+        if not self.check(tt.SEMICOLON):
+            condition = self.expression()
+        self.consume(tt.SEMICOLON, "Expect ';' after loop condition")
+        # look for the increment
+        increment = None
+        if not self.check(tt.RIGHT_PAREN):
+            increment = self.expression()
+        self.consume(tt.RIGHT_PAREN, "Expect ')' after for clauses.")
+        # the body
+        body = self.statement()
+        # desugaring: put the increment at the end of the body
+        if increment is not None:
+            body = Block([body, Expression(increment)])
+        # desugaring: make a while loop, default condition true
+        if condition is None:
+            condition = Literal(True)
+        body = While(condition, body)
+        # desugaring: add the initializer before the while loop
+        if initializer is not None:
+            body = Block([initializer, body])
+        # done
+        return body
+
 
     def if_statement(self) -> Stmt:
         self.consume(tt.LEFT_PAREN, "Expect '(' after 'if'.")
