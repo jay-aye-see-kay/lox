@@ -12,7 +12,7 @@ class Environment():
         self.values[name] = value
 
     def get(self, name: Token):
-        value = self.values[name.lexeme]
+        value = self.values.get(name.lexeme)
         if value is not None:
             return value
         if self.enclosing is not None:
