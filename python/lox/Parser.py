@@ -3,7 +3,7 @@ if TYPE_CHECKING:
     from lox.Lox import Lox
 from lox.Exceptions import ParseError
 from typing import List
-from lox.Stmt import Block, Expression, Print, Stmt, Var
+from lox.Stmt import Block, Expression, If, Print, Stmt, Var
 from lox.Expr import Assign, Binary, Unary, Literal, Grouping, Variable
 from lox.TokenType import TokenType
 from lox.Token import Token
@@ -40,11 +40,21 @@ class Parser:
             return None
 
     def statement(self) -> Stmt:
+        if self.match(tt.IF):
+            return self.if_statement()
         if self.match(tt.PRINT):
             return self.print_statement()
         if self.match(tt.LEFT_BRACE):
             return Block(self.block())
         return self.expression_statement()
+
+    def if_statement(self) -> Stmt:
+        self.consume(tt.LEFT_PAREN, "Expect '(' after 'if'.")
+        condition = self.expression()
+        self.consume(tt.RIGHT_PAREN, "Expect ')' after condition.")
+        then_branch = self.statement()
+        else_branch = self.statement() if self.match(tt.ELSE) else None
+        return If(condition, then_branch, else_branch)
 
     def print_statement(self):
         value = self.expression()

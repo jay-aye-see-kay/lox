@@ -2,7 +2,7 @@ from __future__ import annotations
 from lox.Environment import Environment
 from typing import List, TYPE_CHECKING, cast
 
-from lox.Stmt import Block, Expression, Stmt, StmtVisitor, Var
+from lox.Stmt import Block, Expression, If, Stmt, StmtVisitor, Var
 from lox.Exceptions import LoxRuntimeError
 from lox.Expr import Assign, Binary, Expr, Grouping, Literal, Unary, ExprVisitor, Variable
 from lox.Token import Token
@@ -48,6 +48,12 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visit_expression_stmt(self, stmt: Expression):
         self.evaluate(stmt.expression)
+
+    def visit_if_stmt(self, stmt: If):
+        if self.is_truthy(self.evaluate(stmt.condition)):
+            self.execute(stmt.then_branch)
+        elif stmt.else_branch is not None:
+            self.execute(stmt.else_branch)
 
     def visit_print_stmt(self, stmt: Expression):
         value = self.evaluate(stmt.expression)
