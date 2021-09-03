@@ -3,7 +3,7 @@ if TYPE_CHECKING:
     from lox.Lox import Lox
 from lox.Exceptions import ParseError
 from typing import List
-from lox.Stmt import Block, Expression, If, Print, Stmt, Var
+from lox.Stmt import Block, Expression, If, Print, Stmt, Var, While
 from lox.Expr import Assign, Binary, Logical, Unary, Literal, Grouping, Variable
 from lox.TokenType import TokenType
 from lox.Token import Token
@@ -44,6 +44,8 @@ class Parser:
             return self.if_statement()
         if self.match(tt.PRINT):
             return self.print_statement()
+        if self.match(tt.WHILE):
+            return self.while_statement()
         if self.match(tt.LEFT_BRACE):
             return Block(self.block())
         return self.expression_statement()
@@ -72,6 +74,13 @@ class Parser:
             # create a "fake token" of value None to store as variable value
             initializer = Literal(Token(tt.IDENTIFIER, "", None, name.line))
         return Var(name, initializer)
+
+    def while_statement(self):
+        self.consume(tt.LEFT_PAREN, "Expect '(' after 'while'.")
+        condition = self.expression()
+        self.consume(tt.RIGHT_PAREN, "Expect ')' after condition.")
+        body = self.statement()
+        return While(condition, body)
 
     def expression_statement(self):
         expr = self.expression()

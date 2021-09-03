@@ -2,7 +2,7 @@ from __future__ import annotations
 from lox.Environment import Environment
 from typing import List, TYPE_CHECKING, cast
 
-from lox.Stmt import Block, Expression, If, Stmt, StmtVisitor, Var
+from lox.Stmt import Block, Expression, If, Stmt, StmtVisitor, Var, While
 from lox.Exceptions import LoxRuntimeError
 from lox.Expr import Assign, Binary, Expr, Grouping, Literal, Logical, Unary, ExprVisitor, Variable
 from lox.Token import Token
@@ -64,6 +64,10 @@ class Interpreter(ExprVisitor, StmtVisitor):
         if stmt.initializer is not None:
             value = self.evaluate(stmt.initializer)
         self.environment.define(stmt.name.lexeme, value)
+
+    def visit_while_stmt(self, stmt: While):
+        while self.is_truthy(self.evaluate(stmt.condition)):
+            self.execute(stmt.body)
 
     def visit_assign_expr(self, expr: Assign):
         value = self.evaluate(expr.value)
