@@ -4,7 +4,7 @@ if TYPE_CHECKING:
 from lox.Exceptions import ParseError
 from typing import List
 from lox.Stmt import Block, Expression, If, Print, Stmt, Var
-from lox.Expr import Assign, Binary, Unary, Literal, Grouping, Variable
+from lox.Expr import Assign, Binary, Logical, Unary, Literal, Grouping, Variable
 from lox.TokenType import TokenType
 from lox.Token import Token
 
@@ -88,13 +88,29 @@ class Parser:
         return statements
 
     def assignment(self):
-        expr = self.equality()
+        expr = self.logical_or()
         if self.match(tt.EQUAL):
             equals = self.previous()
             value = self.assignment()
             if isinstance(expr, Variable):
                 return Assign(expr.name, value)
             self.error(equals, "Invalid assignment target.")
+        return expr
+
+    def logical_or(self):
+        expr = self.logical_and()
+        while self.match(tt.OR):
+            operator = self.previous()
+            right = self.logical_and()
+            expr = Logical(expr, operator, right)
+        return expr
+
+    def logical_and(self):
+        expr = self.equality()
+        while self.match(tt.AND):
+            operator = self.previous()
+            right = self.equality()
+            expr = Logical(expr, operator, right)
         return expr
 
     def equality(self):

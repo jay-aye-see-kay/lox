@@ -4,7 +4,7 @@ from typing import List, TYPE_CHECKING, cast
 
 from lox.Stmt import Block, Expression, If, Stmt, StmtVisitor, Var
 from lox.Exceptions import LoxRuntimeError
-from lox.Expr import Assign, Binary, Expr, Grouping, Literal, Unary, ExprVisitor, Variable
+from lox.Expr import Assign, Binary, Expr, Grouping, Literal, Logical, Unary, ExprVisitor, Variable
 from lox.Token import Token
 from lox.TokenType import TokenType
 
@@ -137,6 +137,17 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visit_literal_expr(self, expr: Literal):
         return expr.value
+
+    def visit_logical_expr(self, expr: Logical):
+        left = self.evaluate(expr.left)
+        if expr.operator.type == TokenType.OR:
+            if self.is_truthy(left):
+                return left;
+        else:
+            if not self.is_truthy(left):
+                return left;
+        return self.evaluate(expr.right)
+
 
     def visit_unary_expr(self, expr: Unary):
         right = self.evaluate(expr.right)
