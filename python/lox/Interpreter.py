@@ -1,9 +1,10 @@
 from __future__ import annotations
+from lox.LoxFunction import LoxFunction
 from lox.LoxCallable import LoxCallable
 from lox.Environment import Environment
 from typing import List, TYPE_CHECKING, cast
 
-from lox.Stmt import Block, Expression, If, Stmt, StmtVisitor, Var, While
+from lox.Stmt import Block, Expression, Function, If, Stmt, StmtVisitor, Var, While
 from lox.Exceptions import LoxRuntimeError
 from lox.Expr import Assign, Binary, Call, Expr, Grouping, Literal, Logical, Unary, ExprVisitor, Variable
 from lox.Token import Token
@@ -63,6 +64,10 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visit_expression_stmt(self, stmt: Expression):
         self.evaluate(stmt.expression)
+
+    def visit_function_stmt(self, stmt: Function):
+        function = LoxFunction(stmt)
+        self.environment.define(stmt.name.lexeme, function)
 
     def visit_if_stmt(self, stmt: If):
         if self.is_truthy(self.evaluate(stmt.condition)):
@@ -154,14 +159,13 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def visit_call_expr(self, expr: Call):
         callee = self.evaluate(expr.callee)
         arguments = []
-        for argument in arguments:
+        for argument in expr.arguments:
             arguments.append(self.evaluate(argument))
         if not isinstance(callee, LoxCallable):
             raise LoxRuntimeError(expr.paren, "Can only call functions and classes.")
         function = cast(LoxCallable, callee)
         if len(arguments) != function.arity():
-            raise RuntimeError(expr.paren,
-                    f"Expected {function.arity()} arguments but got {len(arguments)}.")
+            raise RuntimeError(expr.paren, f"Expected {function.arity()} arguments but got {len(arguments)}.")
         return function.call(self, arguments)
 
     def visit_grouping_expr(self, expr: Grouping):

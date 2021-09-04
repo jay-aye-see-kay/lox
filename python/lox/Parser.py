@@ -3,7 +3,7 @@ if TYPE_CHECKING:
     from lox.Lox import Lox
 from lox.Exceptions import ParseError
 from typing import List
-from lox.Stmt import Block, Expression, If, Print, Stmt, Var, While
+from lox.Stmt import Block, Expression, Function, If, Print, Stmt, Var, While
 from lox.Expr import Assign, Binary, Call, Expr, Logical, Unary, Literal, Grouping, Variable
 from lox.TokenType import TokenType
 from lox.Token import Token
@@ -32,6 +32,8 @@ class Parser:
 
     def declaration(self):
         try:
+            if self.match(tt.FUN):
+                return self.function("function")
             if self.match(tt.VAR):
                 return self.var_declaration()
             return self.statement()
@@ -122,6 +124,23 @@ class Parser:
         expr = self.expression()
         self.consume(tt.SEMICOLON, "Expect ';' after expression.")
         return Expression(expr)
+
+    def function(self, kind: str):
+        name = self.consume(tt.IDENTIFIER, f"Expect {kind} name.")
+        self.consume(tt.LEFT_PAREN, f"Expect '(' after {kind} name.")
+        parameters = []
+        if not self.check(tt.RIGHT_PAREN):
+            while True:
+                if len(parameters) >= 255:
+                    self.error(self.peek(), "Can't have more than 255 parameters.")
+                parameters.append(self.consume(tt.IDENTIFIER, "Can't have more than 255 parameters."))
+                if not self.match(tt.COMMA):
+                    break # emulating a do-while loop
+        self.consume(tt.RIGHT_PAREN, " Expect ')' after parameters.")
+        self.consume(tt.LEFT_BRACE, f"Expect '{{' before {kind} body.")
+        body = self.block()
+        return Function(name, parameters, body)
+
 
     def block(self):
         statements: List[Stmt] = []
