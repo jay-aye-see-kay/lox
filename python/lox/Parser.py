@@ -4,7 +4,7 @@ if TYPE_CHECKING:
 from lox.Exceptions import ParseError
 from typing import List
 from lox.Stmt import Block, Expression, If, Print, Stmt, Var, While
-from lox.Expr import Assign, Binary, Logical, Unary, Literal, Grouping, Variable
+from lox.Expr import Assign, Binary, Call, Expr, Logical, Unary, Literal, Grouping, Variable
 from lox.TokenType import TokenType
 from lox.Token import Token
 
@@ -85,7 +85,6 @@ class Parser:
             body = Block([initializer, body])
         # done
         return body
-
 
     def if_statement(self) -> Stmt:
         self.consume(tt.LEFT_PAREN, "Expect '(' after 'if'.")
@@ -196,7 +195,28 @@ class Parser:
             operator = self.previous()
             right = self.unary()
             return Unary(operator, right)
-        return self.primary()
+        return self.call()
+
+    def finish_call(self, calle: Expr):
+        arguments = []
+        if not self.check(tt.RIGHT_PAREN):
+            while True:
+                if len(arguments) >= 255:
+                    self.error(self.peek(), "Can't have more than 255 arguments.")
+                arguments.append(self.expression())
+                if not self.match(tt.COMMA):
+                    break # emulating a do-while loop
+        paren = self.consume(tt.RIGHT_PAREN, "Expect ')' after arguments.")
+        return Call(calle, paren, arguments)
+
+    def call(self):
+        expr = self.primary()
+        while True:
+            if self.match(tt.LEFT_PAREN):
+                expr = self.finish_call(expr)
+            else:
+                break
+        return expr
 
     def primary(self):
         if self.match(tt.FALSE):

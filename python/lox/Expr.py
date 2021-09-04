@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import List
 from lox.Token import Token
 
 
@@ -10,6 +11,10 @@ class ExprVisitor(ABC):
 
     @abstractmethod
     def visit_binary_expr(self, expr: "Binary"):
+        pass
+
+    @abstractmethod
+    def visit_call_expr(self, expr: "Call"):
         pass
 
     @abstractmethod
@@ -56,6 +61,16 @@ class Binary(Expr):
 
     def accept(self, visitor: ExprVisitor):
         return visitor.visit_binary_expr(self)
+
+
+@dataclass
+class Call(Expr):
+    callee: Expr
+    paren: Token
+    arguments: List[Expr]
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_call_expr(self)
 
 
 @dataclass
