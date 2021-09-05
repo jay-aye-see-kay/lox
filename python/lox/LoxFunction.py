@@ -8,11 +8,12 @@ if TYPE_CHECKING:
     from lox.Interpreter import Interpreter
 
 class LoxFunction(LoxCallable):
-    def __init__(self, declaration: Function):
+    def __init__(self, declaration: Function, closure: Environment):
+        self.closure = closure
         self.declaration = declaration
 
     def call(self, interpreter: "Interpreter", arguments: List[object]):
-        environment = Environment(interpreter.globals)
+        environment = Environment(self.closure)
         for i, param in enumerate(self.declaration.params):
             environment.define(param.lexeme, arguments[i])
         try:
