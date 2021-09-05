@@ -9,3 +9,8 @@ class LoxRuntimeError(RuntimeError):
 
 class ParseError(RuntimeError):
     pass
+
+@dataclass
+class RaisedReturn(RuntimeError):
+    """function returns are handled as raised errors as it's the easiest way to unwind"""
+    value: object

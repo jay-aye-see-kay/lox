@@ -28,6 +28,10 @@ class StmtVisitor(ABC):
         pass
 
     @abstractmethod
+    def visit_return_stmt(self, stmt: "Return"):
+        pass
+
+    @abstractmethod
     def visit_var_stmt(self, stmt: "Var"):
         pass
 
@@ -84,6 +88,15 @@ class Print(Stmt):
 
     def accept(self, visitor: StmtVisitor):
         return visitor.visit_print_stmt(self)
+
+
+@dataclass
+class Return(Stmt):
+    keyword: Token
+    value: Expr
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_return_stmt(self)
 
 
 @dataclass

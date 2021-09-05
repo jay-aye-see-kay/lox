@@ -1,9 +1,9 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 if TYPE_CHECKING:
     from lox.Lox import Lox
 from lox.Exceptions import ParseError
 from typing import List
-from lox.Stmt import Block, Expression, Function, If, Print, Stmt, Var, While
+from lox.Stmt import Block, Expression, Function, If, Print, Return, Stmt, Var, While
 from lox.Expr import Assign, Binary, Call, Expr, Logical, Unary, Literal, Grouping, Variable
 from lox.TokenType import TokenType
 from lox.Token import Token
@@ -48,6 +48,8 @@ class Parser:
             return self.if_statement()
         if self.match(tt.PRINT):
             return self.print_statement()
+        if self.match(tt.RETURN):
+            return self.return_statement()
         if self.match(tt.WHILE):
             return self.while_statement()
         if self.match(tt.LEFT_BRACE):
@@ -100,6 +102,15 @@ class Parser:
         value = self.expression()
         self.consume(tt.SEMICOLON, "Expect ';' after value.")
         return Print(value)
+
+    def return_statement(self):
+        keyword = self.previous()
+        value = None
+        if not self.check(tt.SEMICOLON):
+            value = self.expression()
+        self.consume(tt.SEMICOLON, "Expect ';' after return value.")
+        value = cast(Expr, value) # HACK, we handle None, but it would be a pain to mess with type system now
+        return Return(keyword, value)
 
     def var_declaration(self):
         name = self.consume(tt.IDENTIFIER, "Expect variable name.")

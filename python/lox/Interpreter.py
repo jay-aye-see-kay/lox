@@ -4,8 +4,8 @@ from lox.LoxCallable import LoxCallable
 from lox.Environment import Environment
 from typing import List, TYPE_CHECKING, cast
 
-from lox.Stmt import Block, Expression, Function, If, Stmt, StmtVisitor, Var, While
-from lox.Exceptions import LoxRuntimeError
+from lox.Stmt import Block, Expression, Function, If, Return, Stmt, StmtVisitor, Var, While
+from lox.Exceptions import LoxRuntimeError, RaisedReturn
 from lox.Expr import Assign, Binary, Call, Expr, Grouping, Literal, Logical, Unary, ExprVisitor, Variable
 from lox.Token import Token
 from lox.TokenType import TokenType
@@ -78,6 +78,12 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def visit_print_stmt(self, stmt: Expression):
         value = self.evaluate(stmt.expression)
         print(self.stringify(value))
+
+    def visit_return_stmt(self, stmt: Return):
+        value = None
+        if stmt.value != None:
+            value = self.evaluate(stmt.value)
+        raise RaisedReturn(value)
 
     def visit_var_stmt(self, stmt: Var):
         value = None

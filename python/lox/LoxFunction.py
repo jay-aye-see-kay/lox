@@ -1,3 +1,4 @@
+from lox.Exceptions import RaisedReturn
 from lox.Environment import Environment
 from typing import TYPE_CHECKING, List
 from lox.Stmt import Function
@@ -14,7 +15,10 @@ class LoxFunction(LoxCallable):
         environment = Environment(interpreter.globals)
         for i, param in enumerate(self.declaration.params):
             environment.define(param.lexeme, arguments[i])
-        interpreter.execute_block(self.declaration.body, environment)
+        try:
+            interpreter.execute_block(self.declaration.body, environment)
+        except RaisedReturn as return_value:
+            return return_value.value
 
     def arity(self):
         return len(self.declaration.params)
